@@ -61,13 +61,36 @@ Theta2_grad = zeros(size(Theta2));
 %               the regularization separately and then add them to Theta1_grad
 %               and Theta2_grad from Part 2.
 %
-
-
-
-
-
-
-
+% Theta1 = 25 x 401, Theta2 = 10 x 26
+K = max(y);
+Y = zeros(m, K);
+for i = 1:m
+  Y(i, y(i, 1)) = 1;
+endfor
+res = 0;
+for i = 1:m
+  a1 = [1; X(i, :)']; % 401 x 1
+  z2 = Theta1 * a1; % 25 x 401 x 401 x 1 = 25 x 1
+  a2 = [1; sigmoid(z2)]; % 26 x 1
+  z3 = Theta2 * a2; % 10 x 26 x 26 x 1 = 10 x 1
+  a3 = sigmoid(z3); % 10 x 1
+  yi = Y(i, :)'; % 10 x 1
+  allOnes = ones(K, 1); % 10 x 1
+  res1 = -yi .* log(a3); % 10 x 1 .* 10 x 1 = 10 x 1
+  part1 = allOnes - yi; % 10 x 1 - 10 x 1 = 10 x 1 
+  diff = allOnes - a3; % 10 x 1 - 10 x 1 = 10 x 1
+  part2 = log(diff); % 10 x 1
+  res2 =  part1 .* part2; % 10 x 1 .* 10 x 1 = 10 x 1
+  res += sum(res1 - res2);
+  d3 = a3 - yi; % 10 x 1 - 10 x 1
+  d2 = Theta2'(2:end,:) * d3 .* sigmoidGradient(z2); % 25 x 10 x 10 x 1 .* 25 x 1 = 25 x 1 .* 25 x 1 = 25 x 1
+  Theta1_grad = Theta1_grad + d2 * a1';
+  Theta2_grad = Theta2_grad + d3 * a2';
+endfor
+Theta1_grad = Theta1_grad / m;
+Theta2_grad = Theta2_grad / m;
+reg = (lambda / (2*m)) * (sum(sum(Theta1.^2)) + sum(sum(Theta2.^2)));
+J = (res / m) + reg;
 
 
 
